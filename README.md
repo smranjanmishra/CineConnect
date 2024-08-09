@@ -10,18 +10,18 @@
 • User-Friendly UI: Intuitive and responsive interface designed for easy navigation and booking.
 
 ## Tech Stack
-• Backend: Java, Spring Boot, Spring MVC, Spring Security, REST API 
-• Database: MySQL, Hibernate, JPA
-• Frontend: Thymeleaf
-• Build Tools: Maven
-• Other Tools: JDBC
+• Backend: Java, Spring Boot, Spring MVC, Spring Security, REST API <br>
+• Database: MySQL, Hibernate, JPA <br>
+• Frontend: Thymeleaf <br>
+• Build Tools: Maven <br> 
+• Other Tools: JDBC <br>
 
 ## Getting Started
 
 <h1>Prerequisites</h1>
-• Java 11 or higher
-• Maven 3.6+
-• MySQL
+• Java 11 or higher <br>
+• Maven 3.6+ <br>
+• MySQL <br>
 
 ## Installation
 <h1>Clone the repository :</h1>
