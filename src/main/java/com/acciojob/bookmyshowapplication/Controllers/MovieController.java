@@ -6,7 +6,6 @@ import com.acciojob.bookmyshowapplication.Service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("movie")
 public class MovieController {
@@ -21,8 +20,6 @@ public class MovieController {
 
     @PutMapping("/updateMovieAttributes")
     public String updateMovieAttributes(@RequestBody UpdateMovieRequest movieRequest) {
-        //You have made sure that only relevant attributes
-        //are expose to the client
         UpdateMovieRequest UpdateMovieRequest;
         String result = movieService.updateMovieAttributes(movieRequest);
         return result;

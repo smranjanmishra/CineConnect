@@ -17,7 +17,6 @@ public class UserController {
 
     @PostMapping("addUser")
     public String addUser(@RequestBody User user){
-
         String response = userService.addUser(user);
         return response;
     }
