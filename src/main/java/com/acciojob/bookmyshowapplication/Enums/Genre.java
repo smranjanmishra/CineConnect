@@ -1,6 +1,7 @@
 package com.acciojob.bookmyshowapplication.Enums;
 
 public enum Genre {
+
     HORROR,
     ROMANTIC,
     COMEDY,
@@ -10,4 +11,5 @@ public enum Genre {
     THRILLER,
     SCIFI,
     FICTIONAL
+
 }

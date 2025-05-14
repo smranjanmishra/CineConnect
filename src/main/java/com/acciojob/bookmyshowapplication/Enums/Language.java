@@ -1,6 +1,7 @@
 package com.acciojob.bookmyshowapplication.Enums;
 
 public enum Language {
+
     HINDI,
     TAMIL,
     TELUGU,
@@ -11,4 +12,5 @@ public enum Language {
     ODIA,
     MALLALAYAM,
     ENGLISH
+
 }
