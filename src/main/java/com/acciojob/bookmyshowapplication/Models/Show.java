@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -15,13 +14,12 @@ import java.time.LocalTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class Show {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer showId;
-
     private LocalDate showDate; //"YYYY-MM-DD"
-
     private LocalTime showTime; //"HH:MM:SS"
 
     @ManyToOne
@@ -31,5 +29,4 @@ public class Show {
     @ManyToOne
     @JoinColumn
     private Theater theater;
-
 }

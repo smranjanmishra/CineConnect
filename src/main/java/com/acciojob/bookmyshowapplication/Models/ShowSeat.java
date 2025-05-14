@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 
 public class ShowSeat {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer showSeatId;
@@ -23,7 +24,6 @@ public class ShowSeat {
     private SeatType seatType;
 
     private Integer price;
-
     private Boolean isAvailable;
 
     @ManyToOne

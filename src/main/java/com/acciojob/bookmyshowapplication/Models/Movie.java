@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 
 @Entity
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
-
 
 public class Movie {
     @Id
@@ -33,7 +31,6 @@ public class Movie {
     private Genre genre;
 
     private LocalDate releaseDate;
-
     private double rating;
 
     @Enumerated(value = EnumType.STRING)

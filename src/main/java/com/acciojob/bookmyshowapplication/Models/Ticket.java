@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.catalina.User;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -18,18 +17,15 @@ import java.time.LocalTime;
 @Builder
 
 public class Ticket {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String ticketId;
 
     private String movieName;
-
     private LocalDate showDate;
-
     private LocalTime showTime;
-
     private String theaterNameAndAddress;
-
     private Integer totalAmtPaid;
 
     @ManyToOne
