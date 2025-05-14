@@ -11,14 +11,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-
     public String addUser(User user){
-
         user = userRepository.save(user);
-
-
         SimpleMailMessage message = new SimpleMailMessage();
-
         message.setSubject("Welcome to Book Your Show Application");
         message.setFrom("springacciojob@gmail.com");
         message.setTo(user.getEmailId());
@@ -28,7 +23,6 @@ public class UserService {
                 "to browse the movies and use Coupon START100 for an instant discount";
 
         message.setText(body);
-
 
         return "The user has been saved to the DB with userId"+user.getUserId();
     }
