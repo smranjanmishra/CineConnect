@@ -20,7 +20,6 @@ public class MovieController {
 
     @PutMapping("/updateMovieAttributes")
     public String updateMovieAttributes(@RequestBody UpdateMovieRequest movieRequest) {
-        UpdateMovieRequest UpdateMovieRequest;
         String result = movieService.updateMovieAttributes(movieRequest);
         return result;
     }

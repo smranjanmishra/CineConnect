@@ -75,7 +75,8 @@ public class TicketService {
         User user = userRepository.findUserByMobNo(bookTicketRequest.getMobNo());
 
         //3. Save the ticketEntity
-        Ticket ticket = Ticket.builder().user((org.apache.catalina.User) user)
+        Ticket ticket = Ticket.builder()
+                .user(user)
                 .movieName(bookTicketRequest.getMovieName())
                 .showDate(bookTicketRequest.getShowDate())
                 .theaterNameAndAddress(theater.getName()+" "+theater.getAddress())

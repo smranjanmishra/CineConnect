@@ -46,41 +46,47 @@ public class TheaterService {
         int rowNo = 1;
 
         List<TheaterSeat> theaterSeatList = new ArrayList<>();
-        while(classicSeatCounter<=noOfClassicSeats) {
-            String seatNo = rowNo+""+ ch;
-            TheaterSeat theaterSeat = TheaterSeat.builder().
-                    seatNo(seatNo).seatType(SeatType.CLASSIC)
+
+        // Generate Classic Seats
+        while(classicSeatCounter <= noOfClassicSeats) {
+            String seatNo = rowNo + "" + ch;
+            TheaterSeat theaterSeat = TheaterSeat.builder()
+                    .seatNo(seatNo)
+                    .seatType(SeatType.CLASSIC)
                     .theater(theater)
                     .build();
-
 
             theaterSeatList.add(theaterSeat);
             ch++;
 
-            if(classicSeatCounter%5==0) {
+            if(classicSeatCounter % 5 == 0) {
                 rowNo = rowNo + 1;
                 ch = 'A';
             }
             classicSeatCounter++;
         }
 
+        // Generate Premium Seats
         int premiumSeatCounter = 1;
         ch = 'A';
 
-        if(classicSeatCounter % 5 != 1)
-                rowNo = rowNo + 1;
+        if(classicSeatCounter % 5 != 1) {
+            rowNo = rowNo + 1;
+        }
 
-        while(classicSeatCounter <= noOfPremiumSeats) {
-            String seatNo = rowNo+ch+"";
-            TheaterSeat theaterSeat = TheaterSeat.builder().
-                    seatNo(seatNo)
+        // FIXED: Changed condition from classicSeatCounter to premiumSeatCounter
+        while(premiumSeatCounter <= noOfPremiumSeats) {
+            String seatNo = rowNo + ch + "";
+            TheaterSeat theaterSeat = TheaterSeat.builder()
+                    .seatNo(seatNo)
                     .theater(theater)
-                    .seatType(SeatType.PREMIUM).build();
+                    .seatType(SeatType.PREMIUM)
+                    .build();
 
             theaterSeatList.add(theaterSeat);
             ch++;
 
-            if(premiumSeatCounter%5==0) {
+            if(premiumSeatCounter % 5 == 0) {
                 rowNo = rowNo + 1;
                 ch = 'A';
             }
