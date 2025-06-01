@@ -20,6 +20,7 @@ public class MovieController {
 
     @PutMapping("/updateMovieAttributes")
     public String updateMovieAttributes(@RequestBody UpdateMovieRequest movieRequest) {
+        // FIXED: Removed the unnecessary unused variable declaration
         String result = movieService.updateMovieAttributes(movieRequest);
         return result;
     }
