@@ -13,24 +13,28 @@ A comprehensive movie booking system built with Spring Boot that allows users to
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Spring Boot 3.5.3+
-- **Language**: Java 17+
-- **Database**: MySQL/PostgreSQL (configurable)
+- **Backend**: Spring Boot 3.2.5
+- **Language**: Java 21
+- **Database**: MySQL
 - **Build Tool**: Maven
 - **Architecture**: RESTful API
-- **Dependencies**: 
-  - Spring Web
-  - Spring Data JPA
-  - Lombok
-  - Spring Boot Starter Web
+- **API Documentation**: SpringDoc OpenAPI (Swagger)
+
+### Dependencies
+
+- Spring Boot Starter Web
+- Spring Boot Starter Data JPA
+- Spring Boot Starter Mail
+- MySQL Connector
+- Lombok
+- SpringDoc OpenAPI UI
 
 ## 📋 Prerequisites
 
-Before running this application, make sure you have:
+Before running this application, ensure you have:
 
-- Java 17 or higher installed
-- Maven 3.6+ installed
-- MySQL/PostgreSQL database server
+- Java 21 or higher installed
+- MySQL database server running
 - IDE (IntelliJ IDEA, Eclipse, or VS Code)
 
 ## 🚀 Getting Started
@@ -44,29 +48,35 @@ cd bookmyshow-application
 
 ### 2. Database Configuration
 
-Create a database named `bookmyshow` in your MySQL/PostgreSQL server.
+Create a database named `cinemaDB` in your MySQL server.
 
-Update the `application.properties` file with your database credentials:
+The application is configured with the following database settings in `application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/bookmyshow
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring.datasource.url=jdbc:mysql://localhost:3306/cinemaDB?createTableIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=admin
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
 ```
+
+**Note**: Update the username and password according to your MySQL configuration.
 
 ### 3. Build and Run
 
 ```bash
-# Build the project
-mvn clean install
+# Build the project using Maven wrapper
+./mvnw clean install
 
 # Run the application
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 The application will start on `http://localhost:8080`
+
+### 4. Access API Documentation
+
+Once the application is running, you can access the Swagger UI at:
+`http://localhost:8080/swagger-ui.html`
 
 ## 📚 API Endpoints
 
@@ -119,8 +129,25 @@ src/
 │   │       │   ├── TicketController.java
 │   │       │   └── UserController.java
 │   │       ├── Service/
+│   │       │   ├── MovieService.java
+│   │       │   ├── ShowService.java
+│   │       │   ├── TheaterService.java
+│   │       │   ├── TicketService.java
+│   │       │   └── UserService.java
 │   │       ├── Models/
+│   │       │   ├── Movie.java
+│   │       │   ├── Show.java
+│   │       │   ├── Theater.java
+│   │       │   ├── TheaterSeat.java
+│   │       │   ├── ShowSeat.java
+│   │       │   ├── Ticket.java
+│   │       │   └── User.java
+│   │       ├── Repository/
+│   │       ├── Enums/
 │   │       └── Requests/
+│   │           ├── AddShowRequest.java
+│   │           ├── AddTheaterRequest.java
+│   │           ├── BookTicketRequest.java
 │   │           └── UpdateMovieRequest.java
 │   └── resources/
 │       ├── application.properties
@@ -136,28 +163,29 @@ Key configuration options in `application.properties`:
 
 ```properties
 # Server Configuration
-server.port=8080
+spring.application.name=book-my-show-application
 
 # Database Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/bookmyshow
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.datasource.url=jdbc:mysql://localhost:3306/cinemaDB?createTableIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=admin
 spring.jpa.hibernate.ddl-auto=update
 
-# Logging
-logging.level.com.acciojob.bookmyshowapplication=DEBUG
+# API Documentation
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
 ```
 
 ## 🧪 Testing
 
-Run tests using Maven:
+Run tests using Maven wrapper:
 
 ```bash
 # Run all tests
-mvn test
+./mvnw test
 
 # Run specific test class
-mvn test -Dtest=MovieServiceTest
+./mvnw test -Dtest=MovieServiceTest
 ```
 
 ## 📦 Deployment
@@ -167,11 +195,11 @@ mvn test -Dtest=MovieServiceTest
 The application is configured for WAR deployment with `ServletInitializer.java`. To deploy:
 
 1. Build WAR file:
-```bash
-mvn clean package
-```
+   ```bash
+   ./mvnw clean package
+   ```
 
-2. Deploy the generated WAR file to your application server (Tomcat, etc.)
+2. Deploy the generated WAR file from `target/book-my-show-application-0.0.1-SNAPSHOT.war` to your application server (Tomcat, etc.)
 
 ## 🤝 Contributing
 
@@ -180,3 +208,6 @@ mvn clean package
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+
+**About**: Developing a feature-rich ticket booking platform akin to BookMyShow, offering seamless movie selection, secure transactions, and comprehensive admin theater management. 
