@@ -35,6 +35,10 @@ public class TicketService {
     @Autowired
     private SeatSelectionRepository seatSelectionRepository;
 
+    // NEW: Add DynamicPricingService
+    @Autowired
+    private DynamicPricingService dynamicPricingService;
+
     public Ticket bookTicket(BookTicketRequest bookTicketRequest) throws Exception{
 
         // NEW: First, get the show and check temporary seat selections
@@ -113,9 +117,19 @@ public class TicketService {
                 .theaterNameAndAddress(theater.getName()+" "+theater.getAddress())
                 .showTime(bookTicketRequest.getShowTime())
                 .totalAmtPaid(totalAmount)
+                .show(show)
                 .build();
 
         ticket = ticketRepository.save(ticket);
+
+        // NEW: Apply dynamic pricing for future bookings (optional - can be done periodically)
+        // This ensures prices are updated based on current demand
+        try {
+            dynamicPricingService.applyDynamicPricingToShow(show);
+        } catch (Exception e) {
+            // Log error but don't fail the booking
+            System.err.println("Error applying dynamic pricing: " + e.getMessage());
+        }
 
         // NEW: After successful booking, update temp selections to CONFIRMED and clean up
         for (SeatSelection selection : userTempSelections) {
