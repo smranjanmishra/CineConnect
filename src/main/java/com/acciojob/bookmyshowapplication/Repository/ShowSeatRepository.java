@@ -8,8 +8,7 @@ import java.util.List;
 
 public interface ShowSeatRepository extends JpaRepository<ShowSeat,Integer> {
 
-    public List<ShowSeat> findAllByShow(Show show); //Inbuilt method invoking
-    //custom JPL Query
+    public List<ShowSeat> findAllByShow(Show show);
     @Query(nativeQuery = true,value = "select * from show_seats where show_show_id = :showId")
     public List<ShowSeat> findShowSeats(Integer showId);
 }
