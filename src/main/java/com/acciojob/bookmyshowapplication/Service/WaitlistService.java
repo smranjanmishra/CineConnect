@@ -2,11 +2,16 @@ package com.acciojob.bookmyshowapplication.Service;
 
 import com.acciojob.bookmyshowapplication.Enums.SeatType;
 import com.acciojob.bookmyshowapplication.Enums.WaitlistStatus;
+import com.acciojob.bookmyshowapplication.Exceptions.BusinessException;
+import com.acciojob.bookmyshowapplication.Exceptions.ResourceNotFoundException;
+import com.acciojob.bookmyshowapplication.Exceptions.WaitlistException;
 import com.acciojob.bookmyshowapplication.Models.*;
 import com.acciojob.bookmyshowapplication.Repository.*;
 import com.acciojob.bookmyshowapplication.Requests.AddToWaitlistRequest;
 import com.acciojob.bookmyshowapplication.Responses.WaitlistResponse;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,8 +20,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing waitlist functionality
+ */
 @Service
 public class WaitlistService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(WaitlistService.class);
 
     @Autowired
     private WaitlistRepository waitlistRepository;
@@ -40,17 +50,23 @@ public class WaitlistService {
      * Add user to waitlist when seats are unavailable
      */
     @Transactional
-    public WaitlistResponse addToWaitlist(AddToWaitlistRequest request) throws Exception {
+    public WaitlistResponse addToWaitlist(AddToWaitlistRequest request) {
+        logger.info("Adding user {} to waitlist for movie: {}", request.getMobNo(), request.getMovieName());
+        
         // Find user
         User user = userRepository.findUserByMobNo(request.getMobNo());
         if (user == null) {
-            throw new Exception("User not found with mobile number: " + request.getMobNo());
+            throw new ResourceNotFoundException("User", "mobile number", request.getMobNo());
         }
 
         // Find show
         Movie movie = movieRepository.findMovieByMovieName(request.getMovieName());
+        if (movie == null) {
+            throw new ResourceNotFoundException("Movie", "movieName", request.getMovieName());
+        }
+        
         Theater theater = theaterRepository.findById(request.getTheaterId())
-                .orElseThrow(() -> new Exception("Theater not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Theater", "theaterId", request.getTheaterId()));
 
         Show show = showRepository.findShowByShowDateAndShowTimeAndMovieAndTheater(
                 request.getShowDate(),
@@ -60,13 +76,13 @@ public class WaitlistService {
         );
 
         if (show == null) {
-            throw new Exception("Show not found");
+            throw new ResourceNotFoundException("Show not found for the given date, time, movie and theater");
         }
 
         // Check if show has already passed
         LocalDateTime showDateTime = LocalDateTime.of(show.getShowDate(), show.getShowTime());
         if (LocalDateTime.now().isAfter(showDateTime)) {
-            throw new Exception("Cannot add to waitlist for a show that has already passed");
+            throw new WaitlistException("Cannot add to waitlist for a show that has already passed");
         }
 
         // Check if user already has active waitlist for this show
@@ -75,7 +91,7 @@ public class WaitlistService {
                 .anyMatch(w -> w.getUser().getUserId().equals(user.getUserId()));
 
         if (userAlreadyWaitlisted) {
-            throw new Exception("You are already on the waitlist for this show");
+            throw new WaitlistException("You are already on the waitlist for this show");
         }
 
         // Create waitlist entry
@@ -208,16 +224,20 @@ public class WaitlistService {
      * Cancel waitlist entry
      */
     @Transactional
-    public void cancelWaitlistEntry(Integer waitlistId) throws Exception {
+    public void cancelWaitlistEntry(Integer waitlistId) {
+        logger.info("Cancelling waitlist entry: {}", waitlistId);
+        
         Waitlist waitlist = waitlistRepository.findById(waitlistId)
-                .orElseThrow(() -> new Exception("Waitlist entry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Waitlist", "waitlistId", waitlistId));
 
         if (waitlist.getStatus() != WaitlistStatus.PENDING && waitlist.getStatus() != WaitlistStatus.NOTIFIED) {
-            throw new Exception("Cannot cancel waitlist entry with status: " + waitlist.getStatus());
+            throw new WaitlistException("Cannot cancel waitlist entry with status: " + waitlist.getStatus());
         }
 
         waitlist.setStatus(WaitlistStatus.CANCELLED);
         waitlistRepository.save(waitlist);
+        
+        logger.info("Waitlist entry {} cancelled successfully", waitlistId);
     }
 
     /**

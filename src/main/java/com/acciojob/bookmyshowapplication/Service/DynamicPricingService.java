@@ -2,6 +2,7 @@ package com.acciojob.bookmyshowapplication.Service;
 
 import com.acciojob.bookmyshowapplication.Enums.PricingFactorType;
 import com.acciojob.bookmyshowapplication.Enums.SeatType;
+import com.acciojob.bookmyshowapplication.Exceptions.ResourceNotFoundException;
 import com.acciojob.bookmyshowapplication.Models.PricingConfig;
 import com.acciojob.bookmyshowapplication.Models.Show;
 import com.acciojob.bookmyshowapplication.Models.ShowSeat;
@@ -9,14 +10,21 @@ import com.acciojob.bookmyshowapplication.Repository.PricingConfigRepository;
 import com.acciojob.bookmyshowapplication.Repository.ShowSeatRepository;
 import com.acciojob.bookmyshowapplication.Responses.PricingResponse;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.util.*;
 
+/**
+ * Service for managing dynamic pricing
+ */
 @Service
 public class DynamicPricingService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DynamicPricingService.class);
 
     @Autowired
     private PricingConfigRepository pricingConfigRepository;
@@ -243,9 +251,11 @@ public class DynamicPricingService {
     /**
      * Update pricing configuration
      */
-    public PricingConfig updatePricingConfig(Integer configId, PricingConfig updatedConfig) throws Exception {
+    public PricingConfig updatePricingConfig(Integer configId, PricingConfig updatedConfig) {
+        logger.info("Updating pricing config: {}", configId);
+        
         PricingConfig existing = pricingConfigRepository.findById(configId)
-                .orElseThrow(() -> new Exception("Pricing config not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("PricingConfig", "configId", configId));
 
         existing.setMultiplier(updatedConfig.getMultiplier());
         existing.setDescription(updatedConfig.getDescription());
@@ -255,7 +265,10 @@ public class DynamicPricingService {
         existing.setStartHour(updatedConfig.getStartHour());
         existing.setEndHour(updatedConfig.getEndHour());
 
-        return pricingConfigRepository.save(existing);
+        PricingConfig saved = pricingConfigRepository.save(existing);
+        logger.info("Pricing config {} updated successfully", configId);
+        
+        return saved;
     }
 
     private String getTimeSlotName(int hour) {

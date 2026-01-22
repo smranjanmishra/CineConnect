@@ -2,6 +2,9 @@ package com.acciojob.bookmyshowapplication.Service;
 
 import com.acciojob.bookmyshowapplication.Enums.RefundStatus;
 import com.acciojob.bookmyshowapplication.Enums.TicketStatus;
+import com.acciojob.bookmyshowapplication.Exceptions.BusinessException;
+import com.acciojob.bookmyshowapplication.Exceptions.CancellationException;
+import com.acciojob.bookmyshowapplication.Exceptions.ResourceNotFoundException;
 import com.acciojob.bookmyshowapplication.Models.RefundTransaction;
 import com.acciojob.bookmyshowapplication.Models.ShowSeat;
 import com.acciojob.bookmyshowapplication.Models.Ticket;
@@ -11,6 +14,8 @@ import com.acciojob.bookmyshowapplication.Repository.TicketRepository;
 import com.acciojob.bookmyshowapplication.Requests.CancelTicketRequest;
 import com.acciojob.bookmyshowapplication.Responses.CancellationResponse;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +24,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service for handling ticket cancellations and refunds
+ */
 @Service
 public class CancellationService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CancellationService.class);
 
     @Autowired
     private TicketRepository ticketRepository;
@@ -62,20 +72,22 @@ public class CancellationService {
     }
 
     @Transactional
-    public CancellationResponse cancelTicket(CancelTicketRequest request) throws Exception {
+    public CancellationResponse cancelTicket(CancelTicketRequest request) {
+        logger.info("Cancelling ticket: {}", request.getTicketId());
+        
         // Find the ticket
         Ticket ticket = ticketRepository.findById(request.getTicketId())
-                .orElseThrow(() -> new Exception("Ticket not found with ID: " + request.getTicketId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "ticketId", request.getTicketId()));
 
         // Validate ticket status
         if (ticket.getTicketStatus() == TicketStatus.CANCELLED) {
-            throw new Exception("Ticket is already cancelled");
+            throw new CancellationException("Ticket is already cancelled");
         }
 
         // Check if show has already passed
         LocalDateTime showDateTime = LocalDateTime.of(ticket.getShowDate(), ticket.getShowTime());
         if (LocalDateTime.now().isAfter(showDateTime)) {
-            throw new Exception("Cannot cancel ticket for a show that has already passed");
+            throw new CancellationException("Cannot cancel ticket for a show that has already passed");
         }
 
         // Calculate refund
@@ -119,8 +131,10 @@ public class CancellationService {
             waitlistService.processWaitlistForShow(ticket.getShow());
         } catch (Exception e) {
             // Log the error but don't fail the cancellation
-            System.err.println("Error processing waitlist: " + e.getMessage());
+            logger.error("Error processing waitlist: {}", e.getMessage());
         }
+
+        logger.info("Ticket {} cancelled successfully with {}% refund", ticket.getTicketId(), refundPercentage * 100);
 
         // Build response
         return CancellationResponse.builder()
@@ -197,8 +211,10 @@ public class CancellationService {
     /**
      * Get refund status for a ticket
      */
-    public RefundTransaction getRefundStatus(String ticketId) throws Exception {
+    public RefundTransaction getRefundStatus(String ticketId) {
+        logger.info("Fetching refund status for ticket: {}", ticketId);
+        
         return refundTransactionRepository.findByTicketTicketId(ticketId)
-                .orElseThrow(() -> new Exception("No refund transaction found for ticket: " + ticketId));
+                .orElseThrow(() -> new ResourceNotFoundException("Refund transaction not found for ticket: " + ticketId));
     }
 }
