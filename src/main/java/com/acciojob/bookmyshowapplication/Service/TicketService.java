@@ -1,17 +1,26 @@
 package com.acciojob.bookmyshowapplication.Service;
 
+import com.acciojob.bookmyshowapplication.Enums.TicketStatus;
+import com.acciojob.bookmyshowapplication.Exceptions.ResourceNotFoundException;
 import com.acciojob.bookmyshowapplication.Exceptions.SeatUnavailableException;
 import com.acciojob.bookmyshowapplication.Models.*;
 import com.acciojob.bookmyshowapplication.Repository.*;
 import com.acciojob.bookmyshowapplication.Requests.BookTicketRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service layer for ticket booking and management
+ */
 @Service
 public class TicketService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(TicketService.class);
 
     @Autowired
     private MovieRepository movieRepository;
@@ -39,11 +48,21 @@ public class TicketService {
     @Autowired
     private DynamicPricingService dynamicPricingService;
 
-    public Ticket bookTicket(BookTicketRequest bookTicketRequest) throws Exception{
+    /**
+     * Book tickets for a movie show
+     */
+    public Ticket bookTicket(BookTicketRequest bookTicketRequest) {
+        logger.info("Booking ticket for movie: {} by user: {}", 
+                bookTicketRequest.getMovieName(), bookTicketRequest.getMobNo());
 
         // NEW: First, get the show and check temporary seat selections
         Movie movie = movieRepository.findMovieByMovieName(bookTicketRequest.getMovieName());
-        Theater theater = theaterRepository.findById(bookTicketRequest.getTheaterId()).get();
+        if (movie == null) {
+            throw new ResourceNotFoundException("Movie", "movieName", bookTicketRequest.getMovieName());
+        }
+        
+        Theater theater = theaterRepository.findById(bookTicketRequest.getTheaterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Theater", "theaterId", bookTicketRequest.getTheaterId()));
 
         //1.1 Find the ShowEntity with this date and Time
         Show show = showRepository.findShowByShowDateAndShowTimeAndMovieAndTheater(
@@ -52,6 +71,10 @@ public class TicketService {
                 movie,
                 theater
         );
+        
+        if (show == null) {
+            throw new ResourceNotFoundException("Show not found for the given date, time, movie and theater");
+        }
 
         // NEW: Check if seats are temporarily selected by the user
         Date cutoffTime = new Date(System.currentTimeMillis() - 10 * 60 * 1000); // 10 minutes ago
@@ -108,6 +131,9 @@ public class TicketService {
         showSeatRepository.saveAll(showSeatList);
 
         User user = userRepository.findUserByMobNo(bookTicketRequest.getMobNo());
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "mobile number", bookTicketRequest.getMobNo());
+        }
 
         // EXISTING CODE: Save the ticketEntity
         Ticket ticket = Ticket.builder()
@@ -118,9 +144,11 @@ public class TicketService {
                 .showTime(bookTicketRequest.getShowTime())
                 .totalAmtPaid(totalAmount)
                 .show(show)
+                .ticketStatus(TicketStatus.CONFIRMED)
                 .build();
 
         ticket = ticketRepository.save(ticket);
+        logger.info("Ticket booked successfully with ID: {}", ticket.getTicketId());
 
         // NEW: Apply dynamic pricing for future bookings (optional - can be done periodically)
         // This ensures prices are updated based on current demand
@@ -128,7 +156,7 @@ public class TicketService {
             dynamicPricingService.applyDynamicPricingToShow(show);
         } catch (Exception e) {
             // Log error but don't fail the booking
-            System.err.println("Error applying dynamic pricing: " + e.getMessage());
+            logger.error("Error applying dynamic pricing: {}", e.getMessage());
         }
 
         // NEW: After successful booking, update temp selections to CONFIRMED and clean up
@@ -153,5 +181,27 @@ public class TicketService {
         }
 
         return ticket;
+    }
+    
+    /**
+     * Get ticket by ID
+     */
+    public Ticket getTicketById(String ticketId) {
+        logger.info("Fetching ticket with ID: {}", ticketId);
+        
+        return ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "ticketId", ticketId));
+    }
+    
+    /**
+     * Get all tickets for a user
+     */
+    public List<Ticket> getUserTickets(Integer userId) {
+        logger.info("Fetching tickets for user ID: {}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        
+        return ticketRepository.findByUser(user);
     }
 }
